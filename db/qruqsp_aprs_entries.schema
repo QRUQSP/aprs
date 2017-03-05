@@ -1,0 +1,90 @@
+#
+# Description
+# -----------
+#
+#
+# Fields
+# ------
+# id:                       The ID assigned to the item.
+# uuid:                     The Universal Unique ID.
+# station_id:               The station the item is attached to.
+#
+# decoder:                  The decoder for the entry.
+#
+# channel:                  The channel from direwolf.
+#
+# utc_of_traffic:           
+#
+# from_call_sign:
+# from_call_suffix:
+# heard_call_sign:
+# heard_call_suffix:
+#
+# level:
+# error:
+# dti:
+# name:
+# symbol:
+#
+# latitude:                 The latitude if provided of the packet source.
+# longitude:                The longitude if provided of the packet source.
+# speed:
+# course:
+# altitude:                 The altitude if provided of the packet source.
+#
+# frequency:
+# offset:
+# tone: 
+# system:
+# status:
+# comment:
+#
+# original_message:         The full original message as received via the radio.
+#
+# date_added:               The UTC date and time the record was added.
+# last_updated:             The UTC date and time the record was last updated.
+#
+create table qruqsp_aprs_entries (
+    id int not null auto_increment,
+    uuid char(36) not null,
+    station_id int not null,
+
+    decoder varchar(50) not null,
+    channel tinyint unsigned not null,
+
+    utc_of_traffic datetime not null,
+
+    from_call_sign varchar(20) not null,
+    from_call_suffix varchar(20) not null,
+    heard_call_sign varchar(20) not null,
+    heard_call_suffix varchar(20) not null,
+
+    level varchar(50) not null, 
+    error varchar(50) not null, 
+    dti varchar(50) not null, 
+    name varchar(50) not null, 
+    symbol varchar(50) not null, 
+
+    latitude decimal(18,12) not null,
+    longitude decimal(18,12) not null,
+    speed varchar(50) not null,
+    course varchar(50) not null,
+    altitude varchar(50) not null,
+
+    frequency varchar(50) not null,
+    offset varchar(50) not null,
+    tone varchar(50) not null,
+    system varchar(50) not null,
+    status varchar(50) not null,
+    telemetry varchar(250) not null,
+    comment varchar(1000) not null,
+
+    date_added datetime not null,
+    last_updated datetime not null,
+
+    primary key (id),
+    unique index (uuid),
+    index (from_call_sign, heard_call_sign),
+    index (utc_of_traffic),
+    index sync (station_id, uuid, last_updated)
+) ENGINE='InnoDB', COMMENT='v1.01';
