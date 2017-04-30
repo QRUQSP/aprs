@@ -1,4 +1,3 @@
-#!/opt/local/bin/php56
 <?php
 
 //
@@ -74,10 +73,10 @@ function qInit() {
         'curlapi'=>array(
             'ch'=>$ch,
             'url'=>'http://qruqsp.local/qruqsp-json.php',
-            'apikey'=>'36126f448916a9253caa1a74fa726144',
+            'apikey'=>'8c5ed7e6e5a1565da827596160048c5b',
             'token'=>'',
-            'username'=>'andrew',
-            'password'=>'veggie12',
+            'username'=>'w7kyg',
+            'password'=>'Qruq5po0r6',
             'station_id'=>1,
         ));
 
