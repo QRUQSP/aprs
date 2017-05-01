@@ -69,6 +69,8 @@ function qruqsp_aprs_entrySearch($q) {
         . "AND ("
             . "name LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
             . "OR name LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
+            . "OR from_call_sign LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
+            . "OR heard_call_sign LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
             . "OR comment LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
             . "OR comment LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
         . ") "

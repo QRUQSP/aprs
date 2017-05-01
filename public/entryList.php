@@ -62,11 +62,15 @@ function qruqsp_aprs_entryList($q) {
         . "qruqsp_aprs_entries.comment "
         . "FROM qruqsp_aprs_entries "
         . "WHERE qruqsp_aprs_entries.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+        . "ORDER BY utc_of_traffic DESC "
+        . "LIMIT 100 "
         . "";
     qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
     $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.aprs', array(
         array('container'=>'entries', 'fname'=>'id', 
-            'fields'=>array('id', 'decoder', 'channel', 'utc_of_traffic', 'from_call_sign', 'from_call_suffix', 'heard_call_sign', 'heard_call_suffix', 'level', 'error', 'dti', 'name', 'symbol', 'latitude', 'longitude', 'speed', 'course', 'altitude', 'frequency', 'offset', 'tone', 'system', 'status', 'telemetry', 'comment')),
+            'fields'=>array('id', 'decoder', 'channel', 'utc_of_traffic', 
+                'from_call_sign', 'from_call_suffix', 'heard_call_sign', 'heard_call_suffix', 'level', 'error', 'dti', 'name', 'symbol', 
+                'latitude', 'longitude', 'speed', 'course', 'altitude', 'frequency', 'offset', 'tone', 'system', 'status', 'telemetry', 'comment')),
         ));
     if( $rc['stat'] != 'ok' ) {
         return $rc;

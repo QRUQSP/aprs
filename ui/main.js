@@ -5,17 +5,20 @@ function qruqsp_aprs_main() {
     //
     // The panel to list the entry
     //
-    this.menu = new Q.panel('entry', 'qruqsp_aprs_main', 'menu', 'mc', 'medium', 'sectioned', 'qruqsp.aprs.main.menu');
+    this.menu = new Q.panel('entry', 'qruqsp_aprs_main', 'menu', 'mc', 'full', 'sectioned', 'qruqsp.aprs.main.menu');
     this.menu.data = {};
     this.menu.nplist = [];
     this.menu.sections = {
-        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':1,
+        'search':{'label':'', 'type':'livesearchgrid', 'livesearchcols':5,
             'cellClasses':[''],
             'hint':'Search entry',
             'noData':'No entry found',
             },
-        'entries':{'label':'APRS Entry', 'type':'simplegrid', 'num_cols':1,
+        'entries':{'label':'Latest Entries', 'type':'simplegrid', 'num_cols':5,
             'noData':'No entry',
+            'headerValues':['From', 'Heard', 'Time', 'Level', 'Comments'],
+            'sortable':'yes',
+            'sortTypes':['text', 'text', 'text', 'text', 'text'],
             'addTxt':'Add APRS Entry',
             'addFn':'Q.qruqsp_aprs_main.entry.open(\'Q.qruqsp_aprs_main.menu.open();\',0,null);'
             },
@@ -28,15 +31,19 @@ function qruqsp_aprs_main() {
         }
     }
     this.menu.liveSearchResultValue = function(s, f, i, j, d) {
-        return d.name;
+        return this.cellValue(s, i, j, d);
     }
     this.menu.liveSearchResultRowFn = function(s, f, i, j, d) {
         return 'Q.qruqsp_aprs_main.entry.open(\'Q.qruqsp_aprs_main.menu.open();\',\'' + d.id + '\');';
     }
     this.menu.cellValue = function(s, i, j, d) {
-        if( s == 'entries' ) {
+        if( s == 'entries' || s == 'search' ) {
             switch(j) {
-                case 0: return d.name;
+                case 0: return d.from_call_sign;
+                case 1: return d.heard_call_sign;
+                case 2: return d.utc_of_traffic;
+                case 3: return d.level;
+                case 4: return d.comment;
             }
         }
     }
