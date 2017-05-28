@@ -11,7 +11,8 @@
 // args: The arguments for the hook
 //
 function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
-    
+
+    $packet_txt = $packet['id'] . ': ';
     //
     // Check the first characters of the data packet
     //
@@ -23,178 +24,179 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Current Mic-E Data (Rev 0 beta)
         //
         if( $chr == 0x1c ) {
-            error_log('current mic-e data');
+            $packet_txt .= 'current mic-e data';
         } 
        
         //
         // Old Mic-E Data (Rev 0 beta)
         //
         elseif( $chr == 0x1d ) {
-            error_log('old mic-c data');
+            $packet_txt .= 'old mic-c data';
         }
 
         //
         // Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Station
         //
         elseif( $chr == '!' ) {
-            error_log('Position without timestamp');
+            $packet_txt .= 'Position without timestamp';
         }
 
         //
         // Peet Bros U-II Weather Station
         //
         elseif( $chr == '#' ) {
-            error_log('Peet Bros U-II Weather Station');
+            $packet_txt .= 'Peet Bros U-II Weather Station';
         }
 
         //
         // Raw GPS Data or Ultimeter 2000
         //
         elseif( $chr == '$' ) {
-            error_log('Raw GPS Data');
+            $packet_txt .= 'Raw GPS Data';
         }
 
         //
         // Agrelo DFJr/MicroFinder
         //
         elseif( $chr == '%' ) {
-            error_log('Agrelo DFJr/MicroFinder');
+            $packet_txt .= 'Agrelo DFJr/MicroFinder';
         }
 
         //
         // Old Mic-E Data (but Current data for TM-D700)
         //
         elseif( $chr == '\'' ) {
-            error_log('Old Mic-E Data (but Current data for TM-D700)');
+            $packet_txt .= 'Old Mic-E Data (but Current data for TM-D700)';
         }
 
         //
         // Item
         //
         elseif( $chr == ')' ) {
-            error_log('Item');
+            $packet_txt .= 'Item';
         }
 
         //
         // Peet Bros U-II Weather Station
         //
         elseif( $chr == '*' ) {
-            error_log('Peet Bros U-II Weather Station');
+            $packet_txt .= 'Peet Bros U-II Weather Station';
         }
 
         //
         // Invalid Data or Test Data
         //
         elseif( $chr == ',' ) {
-            error_log('Invalid Data or Test Data');
+            $packet_txt .= 'Invalid Data or Test Data';
         }
 
         //
         // Position with timestamp (no APRS messaging)
         //
         elseif( $chr == '/' ) {
-            error_log('Position with timestamp (no APRS messaging)');
+            $packet_txt .= 'Position with timestamp (no APRS messaging)';
         }
 
         //
         // Message
         //
         elseif( $chr == ':' ) {
-            error_log('Message');
+            $packet_txt .= 'Message';
         }
 
         //
         // Object
         //
         elseif( $chr == ';' ) {
-            error_log('Object');
+            $packet_txt .= 'Object';
         }
 
         //
         // Station Capabilities
         //
         elseif( $chr == '<' ) {
-            error_log('Station Capabilities');
+            $packet_txt .= 'Station Capabilities';
         }
 
         //
         // Position without timestamp (with APRS messaging)
         //
         elseif( $chr == '=' ) {
-            error_log('Position without timestamp (with APRS messaging)');
+            $packet_txt .= 'Position without timestamp (with APRS messaging)';
         }
 
         //
         // Status
         //
         elseif( $chr == '>' ) {
-            error_log('Status');
+            $packet_txt .= 'Status';
         }
 
         //
         // Query
         //
         elseif( $chr == '?' ) {
-            error_log('Query');
+            $packet_txt .= 'Query';
         }
 
         //
         // Position with timestamp (with APRS messaging)
         //
         elseif( $chr == '@' ) {
-            error_log('Position with timestamp (with APRS messaging)');
+            $packet_txt .= 'Position with timestamp (with APRS messaging)';
         }
 
         //
         // Telemetry Data
         //
         elseif( $chr == 'T' ) {
-            error_log('Telemetry Data');
+            $packet_txt .= 'Telemetry Data';
         }
 
         //
         // Maidenhead grid locator beacon (obsolete)
         //
         elseif( $chr == '[' ) {
-            error_log('Maidenhead grid locator beacon (obsolete)');
+            $packet_txt .= 'Maidenhead grid locator beacon (obsolete)';
         }
 
         //
         // Weather Report
         //
         elseif( $chr == '_' ) {
-            error_log('Weather Report');
+            $packet_txt .= 'Weather Report';
         }
 
         //
         // Current Mic-E Data (not used in TM-D700)
         //
         elseif( $chr == '`' ) {
-            error_log('Current Mic-E Data (not used in TM-D700)');
+            $packet_txt .= 'Current Mic-E Data (not used in TM-D700)';
         }
 
         //
         // User-Defined APRS packet format
         //
         elseif( $chr == '{' ) {
-            error_log('User-Defined APRS packet format');
+            $packet_txt .= 'User-Defined APRS packet format';
         }
 
         //
         // Third-party traffic
         //
         elseif( $chr == '}' ) {
-            error_log('Third-party traffic');
+            $packet_txt .= 'Third-party traffic';
         }
 
         //
         // 
         //
         else {
-            error_log('Unknown: ' . $chr);
+            $packet_txt .= 'Unknown: ' . $chr;
         }
     }
 
+    print $packet_txt . "\n";
 
     return array('stat'=>'ok');
 }
