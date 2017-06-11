@@ -1,0 +1,156 @@
+#
+# Description
+# -----------
+#
+#
+# Fields
+# ------
+# id:                       The ID assigned to the item.
+# uuid:                     The Universal Unique ID.
+# station_id:               The station the item is attached to.
+#
+# packet_id:                The ID of the Kiss TNC packet this APRS data came from, or the packet that was sent.
+#
+# atype:                    The type of APRS data.
+#
+#                                1 - Current Mic-E Data (Rev 0 beta)
+#                                2 - Old Mic-E Data (Rev 0 beta)
+#                                3 - Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Station
+#                                4 - Peet Bros U-II Weather Station
+#                                5 - Raw GPS Data or Ultimeter 2000
+#                                6 - Agrelo DFJr/MicroFinder
+#                                7 - Old Mic-E Data (but Current data for TM-D700)
+#                                8 - Item
+#                                9 - Peet Bros U-II Weather Station
+#                               10 - Invalid Data or Test Data
+#                               11 - Position with timestamp (no APRS messaging)
+#                               12 - Message
+#                               13 - Object
+#                               14 - Station Capabilities
+#                               15 - Position without timestamp (with APRS messaging)
+#                               16 - Status
+#                               17 - Query
+#                               18 - Position with timestamp (with APRS messaging)
+#                               19 - Telemetry Data
+#                               20 - Maidenhead grid locator beacon (obsolete)
+#                               21 - Weather Report
+#                               22 - Current Mic-E Data (not used in TM-D700)
+#                               23 - User-Defined APRS packet format
+#                               24 - Third-party traffic
+#
+# flags:                    The details that were/are a part of the packet.
+#
+#                               0x01 - Time
+#                               0x02 - Position Data
+#                               0x04 - Weather Data
+#                               0x08 - Telemetry Data
+#                               0x10 - 
+#                               0x20 - 
+#                               0x40 - Message
+#                               0x80 - Comments
+#
+# num_errors:               The number of errors that occured during parsing.
+#
+# sent_date:                The UTC date and time when packet was sent from the originating station. 
+#
+# weather_flags:            The options for the weather data.
+#
+#                               0x01 - Wind Direction
+#                               0x02 - Wind Speed
+#                               0x04 - Wind Gust
+#                               0x08 - Temperature
+#                               0x10 - Rain last hour
+#                               0x20 - Rain last day
+#                               0x40 - Rain since midnight
+#                               0x80 - Humidity
+#                               0x0100 - Barometric Pressure
+#                               0x0200 - Luminosity
+#                               0x0400 - 
+#                               0x0800 - 
+#                               0x1000 - 
+#                               0x2000 - 
+#                               0x4000 - 
+#                               0x8000 - 
+#
+# wind_direction:           The direction of the wind (in degrees).
+# wind_speed:               The sustained one-minute wind speed (in mph).
+# wind_gust:                The peak wind speed in mph in the last 5 minutes.
+# temperature:              The temperature in Fahrenheit, negative numbers allowed.
+# rain_last_hour:           The rainfall in the last hour (hundredths of an inch)
+# rain_last_day:            The rainfall in the last 24 hours (hundredths of an inch)
+# rain_since_midnight:      The rainfall since midnight (hundredths of an inch)
+# humidity:                 The humidity in percent (0 - 100)
+# barometric_pressure:      The barometric pressure (tenths of millibars/tenths of hPascal).
+# luminosity:               The luminosity in watts per square meter
+# weather_unit_type:        The type of weather unit. This list is specified in APRS101.pdf
+#
+# telemetry_sequence:       The sequence number.
+# telemetry_analog1:        The first analog value.
+# telemetry_analog2:        The second analog value.
+# telemetry_analog3:        The third analog value.
+# telemetry_analog4:        The fourth analog value.
+# telemetry_analog5:        The fifth analog value.
+# telemetry_digital:        The digital value.
+# 
+# comments:                 The comment field in
+#
+# software_type:            The type of software used to send the aprs data.
+#
+# original_data:            The original data string.
+#
+# date_added:               The UTC date and time the record was added.
+# last_updated:             The UTC date and time the record was last updated.
+#
+create table qruqsp_aprs_entries (
+    id int not null auto_increment,
+    uuid char(36) not null,
+    station_id int not null,
+
+    packet_id int not null,
+    atype tinyint unsigned not null,
+    sent_date datetime not null,
+
+    weather_flags mediumint not null,
+    wind_direction int not null,
+    wind_speed int not null,
+    wind_gust int not null,
+
+
+    decoder varchar(50) not null,
+    channel tinyint unsigned not null,
+
+
+    from_call_sign varchar(20) not null,
+    from_call_suffix varchar(20) not null,
+    heard_call_sign varchar(20) not null,
+    heard_call_suffix varchar(20) not null,
+
+    level varchar(50) not null, 
+    error varchar(50) not null, 
+    dti varchar(50) not null, 
+    name varchar(50) not null, 
+    symbol varchar(50) not null, 
+
+    latitude decimal(18,12) not null,
+    longitude decimal(18,12) not null,
+    speed varchar(50) not null,
+    course varchar(50) not null,
+    altitude varchar(50) not null,
+
+    frequency varchar(50) not null,
+    offset varchar(50) not null,
+    tone varchar(50) not null,
+    system varchar(50) not null,
+    status varchar(50) not null,
+    telemetry varchar(250) not null,
+    comment varchar(1000) not null,
+
+    date_added datetime not null,
+    last_updated datetime not null,
+
+    primary key (id),
+    unique index (uuid),
+    index (from_call_sign, heard_call_sign),
+    index (utc_of_traffic),
+    index sync (station_id, uuid, last_updated)
+) ENGINE='InnoDB', COMMENT='v1.01';

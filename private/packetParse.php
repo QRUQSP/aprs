@@ -13,17 +13,43 @@
 function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
 
     $packet_txt = $packet['id'] . ': ';
+    $obj = array(
+        'packet_id' => $packet['id'],
+        'type' => 0,
+        'flags' => 0,
+        'num_errors' => 0,
+        'original_data' => $packet['data'],
+        );
     //
     // Check the first characters of the data packet
     //
     if( isset($packet['data'][0]) ) {
-        $chr = $packet['data'][0];
+        $chr = substr($packet['data'], 0, 1);
+        $packet['data'] = substr($packet['data'], 1);
 //        error_log("chr: $chr");
+
+        //
+        // Third-party traffic, deal with first so remaining data is parsed second
+        //
+        if( $chr == '}' ) {
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseThirdPartyTraffic');
+            $rc = qruqsp_aprs_parseThirdPartyTraffic($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
+            //
+            // Get the new first character
+            //
+            $chr = substr($packet['data'], 0, 1);
+            $packet['data'] = substr($packet['data'], 1);
+//            print $chr . '--' . $packet['data'] . "\n";
+        }
 
         //
         // Current Mic-E Data (Rev 0 beta)
         //
         if( $chr == 0x1c ) {
+            $obj['type'] = 1;
             $packet_txt .= 'current mic-e data';
         } 
        
@@ -31,6 +57,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Old Mic-E Data (Rev 0 beta)
         //
         elseif( $chr == 0x1d ) {
+            $obj['type'] = 2;
             $packet_txt .= 'old mic-c data';
         }
 
@@ -38,6 +65,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Station
         //
         elseif( $chr == '!' ) {
+            $obj['type'] = 3;
             $packet_txt .= 'Position without timestamp';
         }
 
@@ -45,6 +73,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Peet Bros U-II Weather Station
         //
         elseif( $chr == '#' ) {
+            $obj['type'] = 4;
             $packet_txt .= 'Peet Bros U-II Weather Station';
         }
 
@@ -52,6 +81,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Raw GPS Data or Ultimeter 2000
         //
         elseif( $chr == '$' ) {
+            $obj['type'] = 5;
             $packet_txt .= 'Raw GPS Data';
         }
 
@@ -59,6 +89,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Agrelo DFJr/MicroFinder
         //
         elseif( $chr == '%' ) {
+            $obj['type'] = 6;
             $packet_txt .= 'Agrelo DFJr/MicroFinder';
         }
 
@@ -66,6 +97,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Old Mic-E Data (but Current data for TM-D700)
         //
         elseif( $chr == '\'' ) {
+            $obj['type'] = 7;
             $packet_txt .= 'Old Mic-E Data (but Current data for TM-D700)';
         }
 
@@ -73,6 +105,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Item
         //
         elseif( $chr == ')' ) {
+            $obj['type'] = 8;
             $packet_txt .= 'Item';
         }
 
@@ -80,6 +113,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Peet Bros U-II Weather Station
         //
         elseif( $chr == '*' ) {
+            $obj['type'] = 9;
             $packet_txt .= 'Peet Bros U-II Weather Station';
         }
 
@@ -87,6 +121,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Invalid Data or Test Data
         //
         elseif( $chr == ',' ) {
+            $obj['type'] = 10;
             $packet_txt .= 'Invalid Data or Test Data';
         }
 
@@ -94,6 +129,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Position with timestamp (no APRS messaging)
         //
         elseif( $chr == '/' ) {
+            $obj['type'] = 11;
             $packet_txt .= 'Position with timestamp (no APRS messaging)';
         }
 
@@ -101,13 +137,18 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Message
         //
         elseif( $chr == ':' ) {
-            $packet_txt .= 'Message';
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseMessage');
+            $rc = qruqsp_aprs_parseMessage($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
         }
 
         //
         // Object
         //
         elseif( $chr == ';' ) {
+            $obj['type'] = 13;
             $packet_txt .= 'Object';
         }
 
@@ -115,6 +156,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Station Capabilities
         //
         elseif( $chr == '<' ) {
+            $obj['type'] = 14;
             $packet_txt .= 'Station Capabilities';
         }
 
@@ -122,6 +164,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Position without timestamp (with APRS messaging)
         //
         elseif( $chr == '=' ) {
+            $obj['type'] = 15;
             $packet_txt .= 'Position without timestamp (with APRS messaging)';
         }
 
@@ -129,6 +172,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Status
         //
         elseif( $chr == '>' ) {
+            $obj['type'] = 16;
             $packet_txt .= 'Status';
         }
 
@@ -136,6 +180,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Query
         //
         elseif( $chr == '?' ) {
+            $obj['type'] = 17;
             $packet_txt .= 'Query';
         }
 
@@ -143,6 +188,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Position with timestamp (with APRS messaging)
         //
         elseif( $chr == '@' ) {
+            $obj['type'] = 18;
             $packet_txt .= 'Position with timestamp (with APRS messaging)';
         }
 
@@ -150,13 +196,18 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Telemetry Data
         //
         elseif( $chr == 'T' ) {
-            $packet_txt .= 'Telemetry Data';
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseTelemetry');
+            $rc = qruqsp_aprs_parseTelemetry($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
         }
 
         //
         // Maidenhead grid locator beacon (obsolete)
         //
         elseif( $chr == '[' ) {
+            $obj['type'] = 20;
             $packet_txt .= 'Maidenhead grid locator beacon (obsolete)';
         }
 
@@ -164,13 +215,18 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Weather Report
         //
         elseif( $chr == '_' ) {
-            $packet_txt .= 'Weather Report';
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseWeatherReport');
+            $rc = qruqsp_aprs_parseWeatherReport($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
         }
 
         //
         // Current Mic-E Data (not used in TM-D700)
         //
         elseif( $chr == '`' ) {
+            $obj['type'] = 22;
             $packet_txt .= 'Current Mic-E Data (not used in TM-D700)';
         }
 
@@ -178,6 +234,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // User-Defined APRS packet format
         //
         elseif( $chr == '{' ) {
+            $obj['type'] = 23;
             $packet_txt .= 'User-Defined APRS packet format';
         }
 
@@ -185,7 +242,11 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Third-party traffic
         //
         elseif( $chr == '}' ) {
-            $packet_txt .= 'Third-party traffic';
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseThirdPartyTraffic');
+            $rc = qruqsp_aprs_parseThirdPartyTraffic($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
         }
 
         //
@@ -196,7 +257,14 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         }
     }
 
-    print $packet_txt . "\n";
+//    if( isset($obj['atype']) && ($obj['atype'] == 24 || $obj['atype'] == 19) ) {
+//        print_r($obj);
+//    }
+    if( isset($obj['atype']) && ($obj['atype'] == 12 ) ) {
+        print_r($packet['addrs']);
+        print_r($obj);
+    }
+//    print $packet_txt . ":" . $packet['data'] . "\n";
 
     return array('stat'=>'ok');
 }

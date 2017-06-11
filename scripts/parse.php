@@ -58,7 +58,7 @@ $strsql = "SELECT p.id, "
     . "WHERE p.status = 20 "
     . (isset($argv[1]) && $argv[1] != '' ? " AND p.id = '" . $argv[1] . "' " : '' )
     . "ORDER BY p.id, a.sequence "
-    . "LIMIT 250 "
+//    . "LIMIT 2000 "
     . "";
 qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
 $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.tnc', array(
