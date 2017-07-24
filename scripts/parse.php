@@ -56,9 +56,9 @@ $strsql = "SELECT p.id, "
         . "AND p.station_id = a.station_id "
         . ") "
     . "WHERE p.status = 20 "
-    . (isset($argv[1]) && $argv[1] != '' ? " AND p.id = '" . $argv[1] . "' " : '' )
+    . (isset($argv[1]) && $argv[1] != '' ? " AND p.id IN (" . $argv[1] . ") " : '' )
     . "ORDER BY p.id, a.sequence "
-//    . "LIMIT 2000 "
+    . "LIMIT 40000 "
     . "";
 qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
 $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.tnc', array(

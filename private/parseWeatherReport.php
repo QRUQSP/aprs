@@ -20,7 +20,7 @@ function qruqsp_aprs_parseWeatherReport(&$q, $station_id, $packet, &$obj, &$data
     //
     // Look for the data to start with month day hour minute (MDHM)
     //
-    if( preg_match("/([0-9][0-9])([0-9][0-9])([0-9][0-9])([0-9][0-9])/", $data, $matches) ) {
+    if( preg_match("/_([0-9][0-9])([0-9][0-9])([0-9][0-9])([0-9][0-9])/", $data, $matches) ) {
         $month = $matches[1];
         $day = $matches[2];
         $hour = $matches[3];

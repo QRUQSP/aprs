@@ -17,7 +17,7 @@ function qruqsp_aprs_parseMessage(&$q, $station_id, $packet, &$obj, &$data) {
     //
     // Get the sequence
     //
-    if( preg_match("/^([a-zA-Z0-9\- ]{9}):(.*)$/", $data, $matches) ) {
+    if( preg_match("/^:([a-zA-Z0-9\- ]{9}):(.*)$/", $data, $matches) ) {
         //
         // Remove the matched string from the data string
         //

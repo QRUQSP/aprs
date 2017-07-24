@@ -20,12 +20,13 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         'num_errors' => 0,
         'original_data' => $packet['data'],
         );
+
     //
     // Check the first characters of the data packet
     //
     if( isset($packet['data'][0]) ) {
         $chr = substr($packet['data'], 0, 1);
-        $packet['data'] = substr($packet['data'], 1);
+//        $packet['data'] = substr($packet['data'], 1);
 //        error_log("chr: $chr");
 
         //
@@ -41,26 +42,24 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
             // Get the new first character
             //
             $chr = substr($packet['data'], 0, 1);
-            $packet['data'] = substr($packet['data'], 1);
+//            $packet['data'] = substr($packet['data'], 1);
 //            print $chr . '--' . $packet['data'] . "\n";
         }
 
         //
+        // Old Mic-E Data (but Current data for TM-D700)
+        // Current Mic-E Data (not used in TM-D700)
         // Current Mic-E Data (Rev 0 beta)
-        //
-        if( $chr == 0x1c ) {
-            $obj['type'] = 1;
-            $packet_txt .= 'current mic-e data';
-        } 
-       
-        //
         // Old Mic-E Data (Rev 0 beta)
         //
-        elseif( $chr == 0x1d ) {
-            $obj['type'] = 2;
-            $packet_txt .= 'old mic-c data';
-        }
-
+        if( $chr == "'" || $chr == '`' || $chr == 0x1c || $chr == 0x1d ) {
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseMicEData');
+            $rc = qruqsp_aprs_parseMicEData($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
+        } 
+       
         //
         // Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Station
         //
@@ -91,14 +90,6 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         elseif( $chr == '%' ) {
             $obj['type'] = 6;
             $packet_txt .= 'Agrelo DFJr/MicroFinder';
-        }
-
-        //
-        // Old Mic-E Data (but Current data for TM-D700)
-        //
-        elseif( $chr == '\'' ) {
-            $obj['type'] = 7;
-            $packet_txt .= 'Old Mic-E Data (but Current data for TM-D700)';
         }
 
         //
@@ -223,14 +214,6 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         }
 
         //
-        // Current Mic-E Data (not used in TM-D700)
-        //
-        elseif( $chr == '`' ) {
-            $obj['type'] = 22;
-            $packet_txt .= 'Current Mic-E Data (not used in TM-D700)';
-        }
-
-        //
         // User-Defined APRS packet format
         //
         elseif( $chr == '{' ) {
@@ -260,8 +243,8 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
 //    if( isset($obj['atype']) && ($obj['atype'] == 24 || $obj['atype'] == 19) ) {
 //        print_r($obj);
 //    }
-    if( isset($obj['atype']) && ($obj['atype'] == 12 ) ) {
-        print_r($packet['addrs']);
+    if( isset($obj['atype']) && ($obj['atype'] == 1 ) ) {
+//        print_r($packet['addrs']);
         print_r($obj);
     }
 //    print $packet_txt . ":" . $packet['data'] . "\n";

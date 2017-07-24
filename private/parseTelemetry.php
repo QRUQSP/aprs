@@ -17,8 +17,8 @@ function qruqsp_aprs_parseTelemetry(&$q, $station_id, $packet, &$obj, &$data) {
     //
     // Get the sequence
     //
-    if( preg_match("/\#([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-1]{8})/", $data, $matches)
-        || preg_match("/\#(MIC)([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-1]{8})/", $data, $matches) 
+    if( preg_match("/T\#([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-1]{8})/", $data, $matches)
+        || preg_match("/T\#(MIC)([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-9]{3}),([0-1]{8})/", $data, $matches) 
         ) {
         //
         // Remove the matched string from the data string
