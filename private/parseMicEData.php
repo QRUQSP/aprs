@@ -14,6 +14,11 @@ function qruqsp_aprs_parseMicEData(&$q, $station_id, $packet, &$obj, &$data) {
 
 //    $obj['atype'] = 1;
 
+    //
+    // Strip \r or \n from end of string
+    //
+    $data = rtrim($data, "\r\n");
+
     $chr = substr($data, 0, 1);
 
     if( $chr == 0x1c ) {
@@ -221,15 +226,149 @@ function qruqsp_aprs_parseMicEData(&$q, $station_id, $packet, &$obj, &$data) {
     $pos = 9;
     $telemetry_flag = substr($data, $pos, 1);
     if( $telemetry_flag == "'" ) {
-         $pos+=6;
-    } elseif( $telemetry_flag == "`" ) {
-         $pos+=6;
+//         $pos+=6;
+//    } elseif( $telemetry_flag == "`" ) {
+//         $pos+=6;
     } elseif( $telemetry_flag == 0x1d ) {
          $pos+=6;
     } 
 
     //
-    // 
+    // Check for radio variations
+    //
+    $manufacturer = '';
+    $model = '';
+    $first = substr($data, $pos, 1);
+    $last1 = substr($data, strlen($data)-2, 1);
+    $last2 = substr($data, strlen($data)-1, 1);
+    if( $first == '`' && $last1 == '_' ) {
+        switch($last2) {
+            case ' ': $model = 'VX-8'; break;
+            case '"': $model = 'FTM-350'; break;
+            case '#': $model = 'VX-8G'; break;
+            case '$': $model = 'FT1D'; break;
+            case '%': $model = 'FTM-400DR'; break;
+            case ')': $model = 'FTM-100D'; break;
+            case '(': $model = 'FT2D'; break;
+        }
+        if( $model != '' ) {
+            $manufacturer = 'Yaesu';
+            $pos++;
+            $data = substr($data, 0, strlen($data)-2);
+        }
+    }
+    elseif( $first == '`' && $last1 == ' ' && $last2 == 'X' ) {
+        $manufacturer = 'AP510';
+        $model = 'KD7LXL';
+    }
+    elseif( $first == "'" && $last1 == '|' ) {
+        switch($last2) {
+            case '3': $model = '3'; break;
+            case '4': $model = '4'; break;
+        }
+        if( $model != '' ) {
+            $manufacturer = 'TinyTrack';
+            $pos++;
+            $data = substr($data, 0, strlen($data)-2);
+        }
+    }
+    elseif( $first == "'" && $last1 == ':' ) {
+        switch($last2) {
+            case '4': $model = 'P4dragon DR-7400'; break;
+            case '8': $model = 'P4dragon DR-7800'; break;
+        }
+        if( $model != '' ) {
+            $manufacturer = 'SCS GmbH & Co.';
+            $pos++;
+            $data = substr($data, 0, strlen($data)-2);
+        }
+    }
+    elseif( in_array($first, array(" ", ">", "]", "`", "'")) && $last1 == "\\" ) {
+        $manufacturer = 'Hamhud';
+        $model = $last2;
+        $pos++;
+        $data = substr($data, 0, strlen($data)-2);
+    }
+    elseif( in_array($first, array(" ", ">", "]", "`", "'")) && $last1 == "/" ) {
+        $manufacturer = 'Argent';
+        $model = $last2;
+        $pos++;
+        $data = substr($data, 0, strlen($data)-2);
+    }
+    elseif( in_array($first, array(" ", ">", "]", "`", "'")) && $last1 == "^" ) {
+        $manufacturer = 'HinzTec anyfrog';
+        $model = $last2;
+        $pos++;
+        $data = substr($data, 0, strlen($data)-2);
+    }
+    elseif( in_array($first, array(" ", ">", "]", "`", "'")) && $last1 == "*" ) {
+        $manufacturer = 'APOZxx www.KissOZ.dk Tracker.';
+        $model = $last2;
+        $pos++;
+        $data = substr($data, 0, strlen($data)-2);
+    }
+    elseif( in_array($first, array(" ", ">", "]", "`", "'")) && $last1 == "~" ) {
+        $manufacturer = 'other';
+        $model = $last2;
+        $pos++;
+        $data = substr($data, 0, strlen($data)-2);
+    }
+    elseif( in_array($first, array(" ", ">", "]", "`", "'")) && in_array($last1, array('`', "'", '/', "\\", '-', ':', ';', '.')) ) {
+        $manufacturer = 'unknown';
+        $model = $last2;
+        $pos++;
+        $data = substr($data, 0, strlen($data)-2);
+    }
+    elseif( $first == ']' && $last2 != '=') {
+        $manufacturer = 'Kenwood';
+        $model = 'TH-D710';
+        $pos++;
+        $data = substr($data, 0, strlen($data)-1);
+    }
+    elseif( $first == '>' && $last2 != '=') {
+        $manufacturer = 'Kenwood';
+        $model = 'TH-D72';
+        $pos++;
+        $data = substr($data, 0, strlen($data)-1);
+    }
+    elseif( $first == '>' && $last2 != '^') {
+        $manufacturer = 'Kenwood';
+        $model = 'TH-D74';
+        $pos++;
+        $data = substr($data, 0, strlen($data)-1);
+    }
+    elseif( $first == ']' ) {
+        $manufacturer = 'Kenwood';
+        $model = 'TM-D700';
+        $pos++;
+    }
+    elseif( $first == '>' ) {
+        $manufacturer = 'Kenwood';
+        $model = 'TH-D7A';
+        $pos++;
+    }
+    elseif( $first == ' ' ) {
+        $manufacturer = '';
+        $model = '';
+        $pos++;
+    }
+
+    //
+    // Check for altitude data
+    //
+    $altitude = '';
+//    if( (substr($data, $pos, 1) == "'" || substr($data, $pos, 1) == "`") && substr($data, $pos+4, 1) == '}' ) {
+//        $pos++;
+//    }
+    if( substr($data, $pos+3, 1) == '}' ) {
+        $altitude = (ord(substr($data, $pos, 1)) - 33) * 8281;
+        $altitude += (ord(substr($data, $pos+1, 1)) - 33) * 91;
+        $altitude += ord(substr($data, $pos+2, 1)) - 33;
+        $altitude -= 10000;
+        $pos+=4;
+    }
+
+    $message = substr($data, $pos, strlen($data)-$pos);
 
 //    %s(%s) %s%s %d\n", $lat_degrees, $lat_minutes, $lat_hmin, $message_bits, $mt, $ns, $ew, $offset);
 
@@ -238,13 +377,15 @@ function qruqsp_aprs_parseMicEData(&$q, $station_id, $packet, &$obj, &$data) {
 
     //
 
-//    printf("%s [%0.8f%s %0.8f%s] %3d %3d %3d (%s) %s\n", 
+//    printf("%s [%0.8f%s %0.8f%s] %3d %3d %3d (%s) '%s':'%s'\n", 
 //        $dest_callsign, $lat, $lat_direction, $long, $long_direction,
 //        $speed, $sp_units, $course, $packet['utc_of_traffic'], $packet['data']);
-    printf("%s [%0.8f%s %0.8f%s] %s%s %s (%s) %s\n", 
+    printf("%s [%12.08f%1s %12.8f%1s] %s%s %03d (%s) %-20s %s %s \n", 
         $dest_callsign, $lat, $lat_direction, $long, $long_direction,
-        $symbol_code, $symbol_table, $telemetry_flag, 
-        $packet['utc_of_traffic'], $packet['data']);
+        $symbol_code, $symbol_table, $altitude, 
+        $packet['utc_of_traffic'], 
+        $manufacturer . ' ' . $model, 
+        $message, $packet['data']);
 
 
 
