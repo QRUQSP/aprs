@@ -192,7 +192,7 @@ function qruqsp_aprs_parseMicEData(&$q, $station_id, $packet, &$obj, &$data) {
     //
     if( $lat_hmin == '  ' ) {
         $long_hmin = 0;
-    } elseif( $lat_hmin[1] == ' ' ) {
+    } elseif( isset($lat_min[1]) && $lat_hmin[1] == ' ' ) {
         $long_hmin = floor($long_hmin/10) * 10;
     }
 
@@ -202,13 +202,34 @@ function qruqsp_aprs_parseMicEData(&$q, $station_id, $packet, &$obj, &$data) {
     $lat_degrees = intval($lat_degrees);
     $lat_minutes = intval($lat_minutes);
     $lat_hmin = intval($lat_hmin);
-    printf("%s [%2d %2d.%2d %s/%2d %2d.%2d %s] %3d %3d %3d (%s) %s\n", 
-        $dest_callsign, $lat_degrees, $lat_minutes, $lat_hmin, $lat_direction, $long_degrees, $long_minutes, $long_hmin, $long_direction,
-        $speed, $sp_units, $course, $packet['utc_of_traffic'], $packet['data']);
-     
+    
     //
-    // Store the system as the 2 bytes (Symbol Code & Symbal Table ID)
-    $symbol_code_id = substr($data, 7, 2);
+    // Convert degrees, minutes, hundreds of minutes to decimal
+    //
+    $lat = intval($lat_degrees) + (floatval($lat_minutes . '.' . $lat_hmin)/60);
+    $long = intval($long_degrees) + (floatval($long_minutes . '.' . $long_hmin)/60);
+
+    //
+    // Store the symbol as the 2 bytes (Symbol Code & Symbal Table ID)
+    //
+    $symbol_code = substr($data, 7, 1);
+    $symbol_table = substr($data, 8, 1);
+
+    //
+    // Parse the telemetry data
+    //
+    $pos = 9;
+    $telemetry_flag = substr($data, $pos, 1);
+    if( $telemetry_flag == "'" ) {
+         $pos+=6;
+    } elseif( $telemetry_flag == "`" ) {
+         $pos+=6;
+    } elseif( $telemetry_flag == 0x1d ) {
+         $pos+=6;
+    } 
+
+    //
+    // 
 
 //    %s(%s) %s%s %d\n", $lat_degrees, $lat_minutes, $lat_hmin, $message_bits, $mt, $ns, $ew, $offset);
 
@@ -217,6 +238,13 @@ function qruqsp_aprs_parseMicEData(&$q, $station_id, $packet, &$obj, &$data) {
 
     //
 
+//    printf("%s [%0.8f%s %0.8f%s] %3d %3d %3d (%s) %s\n", 
+//        $dest_callsign, $lat, $lat_direction, $long, $long_direction,
+//        $speed, $sp_units, $course, $packet['utc_of_traffic'], $packet['data']);
+    printf("%s [%0.8f%s %0.8f%s] %s%s %s (%s) %s\n", 
+        $dest_callsign, $lat, $lat_direction, $long, $long_direction,
+        $symbol_code, $symbol_table, $telemetry_flag, 
+        $packet['utc_of_traffic'], $packet['data']);
 
 
 
