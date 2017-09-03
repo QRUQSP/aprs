@@ -380,13 +380,13 @@ function qruqsp_aprs_parseMicEData(&$q, $station_id, $packet, &$obj, &$data) {
 //    printf("%s [%0.8f%s %0.8f%s] %3d %3d %3d (%s) '%s':'%s'\n", 
 //        $dest_callsign, $lat, $lat_direction, $long, $long_direction,
 //        $speed, $sp_units, $course, $packet['utc_of_traffic'], $packet['data']);
-    printf("%s [%12.08f%1s %12.8f%1s] %s%s %03d (%s) %-20s %s %s \n", 
+/*    printf("%s [%12.08f%1s %12.8f%1s] %s%s %03d (%s) %-20s %s %s \n", 
         $dest_callsign, $lat, $lat_direction, $long, $long_direction,
         $symbol_code, $symbol_table, $altitude, 
         $packet['utc_of_traffic'], 
         $manufacturer . ' ' . $model, 
         $message, $packet['data']);
-
+*/
 
 
   /*  

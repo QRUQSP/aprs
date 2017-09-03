@@ -53,6 +53,9 @@
 #
 # sent_date:                The UTC date and time when packet was sent from the originating station. 
 #
+# latitude:                 
+# longitude:
+#
 # weather_flags:            The options for the weather data.
 #
 #                               0x01 - Wind Direction

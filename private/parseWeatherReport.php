@@ -12,15 +12,37 @@
 //
 function qruqsp_aprs_parseWeatherReport(&$q, $station_id, $packet, &$obj, &$data) {
 
-    $obj['atype'] = 21;
+    //
+    // Strip \r or \n from end of string
+    //
+    $data = rtrim($data, "\r\n");
+
+    $chr = substr($data, 0, 1);
+
+    if( $chr == '!' && substr($data, 19, 1) == '_' ) {
+        $obj['atype'] = 3;
+    } elseif( $chr == '=' && substr($data, 19, 1) == '_' ) {
+        $obj['atype'] = 2;
+    } elseif( $chr == '@' && substr($data, 26, 1) == '_' ) {
+        $obj['atype'] = 18;
+    // FIXME: Add in check for compressed
+    } elseif( $chr == '_' ) {
+        $obj['atype'] = 21;
+    } else {
+        return array('stat'=>'fail', 'err'=>array('code'=>'qruqsp.aprs.8', 'msg'=>'Invalid data for Weather Report'));
+    }
+    
+    //
+    // Make sure the weather_flags variable has be setup
+    //
     if( !isset($obj['weather_flags']) ) {
         $obj['weather_flags'] = 0;
     }
 
     //
-    // Look for the data to start with month day hour minute (MDHM)
+    // Look for positionless weather report, starting with MONTHDAYHOURMINUTE (MMDDHHMM)
     //
-    if( preg_match("/_([0-9][0-9])([0-9][0-9])([0-9][0-9])([0-9][0-9])/", $data, $matches) ) {
+    if( preg_match("/^_([0-9][0-9])([0-9][0-9])([0-9][0-9])([0-9][0-9])/", $data, $matches) ) {
         $month = $matches[1];
         $day = $matches[2];
         $hour = $matches[3];
@@ -55,6 +77,117 @@ function qruqsp_aprs_parseWeatherReport(&$q, $station_id, $packet, &$obj, &$data
     }
 
     //
+    // Check for position of positionless report
+    // !9999.00N/99999.00E_
+    //
+    elseif( preg_match("/^!([0-9][0-9])([0-9][0-9])\.([0-9][0-9])(N|S)\/([0-9][0-9][0-9])([0-9][0-9])\.([0-9][0-9])(E|W)_$/", $data, $matches) ) {
+        //
+        // FIXME: This case occures when a weather station sends out a positionless weather report, and 
+        // either bofore or after sends a position in a second packet. This positions need to be matched
+        // to a previous or stored for future positionless report.
+        //
+        $lat_degrees = $matches[1];
+        $lat_minutes = $matches[2];
+        $lat_hmin = $matches[3];
+        $lat_direction = $matches[4];
+        $long_degrees = $matches[5];
+        $long_minutes = $matches[6];
+        $long_hmin = $matches[7];
+        $long_direction = $matches[8];
+        $lat = intval($lat_degrees) + (floatval($lat_minutes . '.' . $lat_hmin)/60);
+        $long = intval($long_degrees) + (floatval($long_minutes . '.' . $long_hmin)/60);
+
+        $obj['latitude'] = $lat;
+        $obj['longitude'] = $long;
+        
+        return array('stat'=>'ok');
+    }
+
+    //
+    // Check for position, no timestamp and weather
+    //
+    elseif( preg_match("/^(!|=)([0-9][0-9])([0-9][0-9])\.([0-9][0-9])(N|S)\/([0-9][0-9][0-9])([0-9][0-9])\.([0-9][0-9])(E|W)_([0-9][0-9][0-9])\/([0-9][0-9][0-9])(.+)$/", $data, $matches) ) {
+        $lat_degrees = $matches[2];
+        $lat_minutes = $matches[3];
+        $lat_hmin = $matches[4];
+        $lat_direction = $matches[5];
+        $long_degrees = $matches[6];
+        $long_minutes = $matches[7];
+        $long_hmin = $matches[8];
+        $long_direction = $matches[9];
+        $lat = intval($lat_degrees) + (floatval($lat_minutes . '.' . $lat_hmin)/60);
+        $long = intval($long_degrees) + (floatval($long_minutes . '.' . $long_hmin)/60);
+
+        $obj['latitude'] = $lat;
+        $obj['longitude'] = $long;
+
+        $obj['wind_direction'] = $matches[10];
+        $obj['weather_flags'] |= 0x01;
+        $obj['wind_speed'] = $matches[11];
+        $obj['weather_flags'] |= 0x02;
+    }
+    
+    //
+    // Position with Timestamp with Weather Data
+    // @000000z0000.00N/00000.00W_000/000g000t...
+    //
+    elseif( preg_match("/^(\@)([0-9][0-9])([0-9][0-9])([0-9][0-9])(z|\/|h)([0-9][0-9])([0-9][0-9])\.([0-9][0-9])(N|S)\/([0-9][0-9][0-9])([0-9][0-9])\.([0-9][0-9])(E|W)_([0-9][0-9][0-9])\/([0-9][0-9][0-9])(.+)$/", $data, $matches) ) {
+        $utc_of_traffic = new DateTime($packet['utc_of_traffic'], new DateTimezone('UTC'));
+        if( $matches[5] == 'z' ) {
+            $day = $matches[2];
+            $hour = $matches[3];
+            $minute = $matches[4];
+            $date_sent = clone $utc_of_traffic;
+            //
+            // Check if the month boundry was hit, the day in the packet will be greater than the utc of traffic, means it wrapped the month.
+            //
+            if( $day > $utc_of_traffic->format('d') ) {
+                $date_sent->sub(new DateInterval('P1M'));
+                $date_sent->setDate($date_sent->format('Y'), $date_sent->format('m'), $day);
+            }
+            $date_sent->setTime($hour, $minute, 00);
+            $obj['date_sent'] = $date_sent->format('Y-m-d H:i:s');
+        } elseif( $matches[5] == '/' ) {
+            $day = $matches[2];
+            $hour = $matches[3];
+            $minute = $matches[4];
+            //
+            // FIXME: No localtime examples found in test data, needs to be implemented in the future
+            //
+        } elseif( $matches[5] == 'h' ) {
+            $hour = $matches[2];
+            $minute = $matches[3];
+            $seconds = $matches[4];
+            $date_sent = clone $utc_of_traffic;
+            $date_sent->setTime($hour, $minute, $seconds);
+            $obj['date_sent'] = $date_sent->format('Y-m-d H:i:s');
+        }
+        $lat_degrees = $matches[6];
+        $lat_minutes = $matches[7];
+        $lat_hmin = $matches[8];
+        $lat_direction = $matches[9];
+        $long_degrees = $matches[10];
+        $long_minutes = $matches[11];
+        $long_hmin = $matches[12];
+        $long_direction = $matches[13];
+        $lat = intval($lat_degrees) + (floatval($lat_minutes . '.' . $lat_hmin)/60);
+        $long = intval($long_degrees) + (floatval($long_minutes . '.' . $long_hmin)/60);
+
+        $obj['latitude'] = $lat;
+        $obj['longitude'] = $long;
+
+        $obj['wind_direction'] = $matches[14];
+        $obj['weather_flags'] |= 0x01;
+        $obj['wind_speed'] = $matches[15];
+        $obj['weather_flags'] |= 0x02;
+    }
+
+    //
+    // FIXME: Check for compressed lat/long format (no examples to work from currently)
+    //
+    
+    
+    //
     // Incase there is a mixup in formatting, the following is run as a loop
     //
     $found = 1;
@@ -75,7 +208,6 @@ function qruqsp_aprs_parseWeatherReport(&$q, $station_id, $packet, &$obj, &$data
                 case 'g': 
                     $obj['wind_gust'] = $matches[2];
                     $obj['weather_flags'] |= 0x04;
-                    break;
                     break;
                 case 't': 
                     $obj['temperature'] = $matches[2];

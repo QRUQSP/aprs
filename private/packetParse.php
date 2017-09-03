@@ -59,21 +59,37 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
                 return $rc;
             }
         } 
-       
+      
+        //
+        // Peet Bros U-II Weather Station
+        // Peet Bros U-II Weather Station
+        // Weather Report
+        //
+        elseif( 
+//            // Check for format: !4903.50N/07201.75W_220/004 ...
+//            preg_match("/^!([0-9][0-9][0-9][0-9]\.[0-9][0-9])(N|S)\/([0-9][0-9][0-9][0-9][0-9]\.[0-9][0-9])(E|W)_[0-9][0-9][0-9]\/[0-9][0-9][0-9]/", $packet['data'])
+            ($chr == '!' && substr($packet['data'], 19, 1) == '_')
+            || ($chr == '=' && substr($packet['data'], 19, 1) == '_')
+            || ($chr == '@' && substr($packet['data'], 26, 1) == '_')
+            || $chr == '#' 
+            || $chr == '*' 
+            || $chr == '_'  // Positionless weather report
+            ) {
+//            $obj['type'] = 4;
+//            $packet_txt .= 'Peet Bros U-II Weather Station';
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseWeatherReport');
+            $rc = qruqsp_aprs_parseWeatherReport($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
+        }
+
         //
         // Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Station
         //
         elseif( $chr == '!' ) {
             $obj['type'] = 3;
             $packet_txt .= 'Position without timestamp';
-        }
-
-        //
-        // Peet Bros U-II Weather Station
-        //
-        elseif( $chr == '#' ) {
-            $obj['type'] = 4;
-            $packet_txt .= 'Peet Bros U-II Weather Station';
         }
 
         //
@@ -100,13 +116,12 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
             $packet_txt .= 'Item';
         }
 
-        //
-        // Peet Bros U-II Weather Station
+/*        //
         //
         elseif( $chr == '*' ) {
             $obj['type'] = 9;
             $packet_txt .= 'Peet Bros U-II Weather Station';
-        }
+        } */
 
         //
         // Invalid Data or Test Data
@@ -163,8 +178,13 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Status
         //
         elseif( $chr == '>' ) {
-            $obj['type'] = 16;
-            $packet_txt .= 'Status';
+//            $obj['type'] = 16;
+//            $packet_txt .= 'Status';
+            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseStatus');
+            $rc = qruqsp_aprs_parseStatus($q, $station_id, $packet, $obj, $packet['data']);
+            if( $rc['stat'] != 'ok' ) {
+                return $rc;
+            }
         }
 
         //
@@ -202,7 +222,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
             $packet_txt .= 'Maidenhead grid locator beacon (obsolete)';
         }
 
-        //
+/*        //
         // Weather Report
         //
         elseif( $chr == '_' ) {
@@ -211,7 +231,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
-        }
+        } */
 
         //
         // User-Defined APRS packet format
