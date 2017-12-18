@@ -8,7 +8,7 @@ if( $rc['stat'] != 'ok' ) {
     print_r($rc['err']);
     exit;
 }
-$q = $rc['q'];
+$ciniki = $rc['ciniki'];
 
 //
 // Watch the standard input
@@ -47,7 +47,7 @@ while($f = fgets(STDIN)) {
         'telemetry'=>$line[20],
         'comment'=>$line[21],
         );
-    $rc = qAPI($q, 'qruqsp.aprs.entryAdd', array(), $entry);
+    $rc = qAPI($ciniki, 'qruqsp.aprs.entryAdd', array(), $entry);
     if( $rc['stat'] != 'ok' ) {
         print_r($rc);
     }
@@ -66,10 +66,10 @@ function qInit() {
     curl_setopt($ch, CURLOPT_FORBID_REUSE, false);
 
     //
-    // Setup the Q variable to store api info. This is stored in curlapi so that $q can
-    // be used the same was a $q variable in other qruqsp code.
+    // Setup the Q variable to store api info. This is stored in curlapi so that $ciniki can
+    // be used the same was a $ciniki variable in other qruqsp code.
     //
-    $q = array(
+    $ciniki = array(
         'curlapi'=>array(
             'ch'=>$ch,
             'url'=>'http://qruqsp.local/qruqsp-json.php',
@@ -77,33 +77,33 @@ function qInit() {
             'token'=>'',
             'username'=>'w7kyg',
             'password'=>'Qruq5po0r6',
-            'station_id'=>1,
+            'tnid'=>1,
         ));
 
     //
     // Authenticate with the server
     //
-    $rc = qAuth($q);
+    $rc = qAuth($ciniki);
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
     
-    return array('stat'=>'ok', 'q'=>$q);
+    return array('stat'=>'ok', 'ciniki'=>$ciniki);
 }
 
-function qAuth(&$q) {
-    $request_url = $q['curlapi']['url'] . "?method=qruqsp.core.auth";
-    $request_url .= '&api_key=' . $q['curlapi']['apikey'];
-    $request_url .= '&auth_token=' . $q['curlapi']['token'];
+function qAuth(&$ciniki) {
+    $request_url = $ciniki['curlapi']['url'] . "?method=ciniki.core.auth";
+    $request_url .= '&api_key=' . $ciniki['curlapi']['apikey'];
+    $request_url .= '&auth_token=' . $ciniki['curlapi']['token'];
     $request_url .= '&format=json';
-    curl_setopt($q['curlapi']['ch'], CURLOPT_URL, $request_url);
-    $post_content = "username=" . rawurlencode($q['curlapi']['username']) . "&password=" . rawurlencode($q['curlapi']['password']);
-    curl_setopt($q['curlapi']['ch'], CURLOPT_POST, false);
-    curl_setopt($q['curlapi']['ch'], CURLOPT_POSTFIELDS, $post_content);
-    $rsp = curl_exec($q['curlapi']['ch']);
-//  curl_close($q['curlapi']['ch']);
+    curl_setopt($ciniki['curlapi']['ch'], CURLOPT_URL, $request_url);
+    $post_content = "username=" . rawurlencode($ciniki['curlapi']['username']) . "&password=" . rawurlencode($ciniki['curlapi']['password']);
+    curl_setopt($ciniki['curlapi']['ch'], CURLOPT_POST, false);
+    curl_setopt($ciniki['curlapi']['ch'], CURLOPT_POSTFIELDS, $post_content);
+    $rsp = curl_exec($ciniki['curlapi']['ch']);
+//  curl_close($ciniki['curlapi']['ch']);
     if( $rsp === false ) {
-        print "Error: " . curl_error($q['curlapi']['ch']) . "\n";
+        print "Error: " . curl_error($ciniki['curlapi']['ch']) . "\n";
         exit;
     }
     $rc = json_decode($rsp, true);
@@ -116,37 +116,37 @@ function qAuth(&$q) {
     if( !isset($rc['auth']['token']) ) {
         return array('stat'=>'fail', 'err'=>array('code'=>'qruqsp.aprs.2', 'msg'=>'No token returned from server'));
     }
-    $q['curlapi']['token'] = $rc['auth']['token'];
+    $ciniki['curlapi']['token'] = $rc['auth']['token'];
 
     return array('stat'=>'ok');
 }
 
-function qAPI(&$q, $method, $args, $post_content='') {
+function qAPI(&$ciniki, $method, $args, $post_content='') {
     //
     // Build the request URL
     //
-    $request_url = $q['curlapi']['url'] . '?method=' . $method;
-    $request_url .= '&api_key=' . $q['curlapi']['apikey'];
-    $request_url .= '&auth_token=' . $q['curlapi']['token'];
-    $request_url .= '&station_id=' . $q['curlapi']['station_id'];
+    $request_url = $ciniki['curlapi']['url'] . '?method=' . $method;
+    $request_url .= '&api_key=' . $ciniki['curlapi']['apikey'];
+    $request_url .= '&auth_token=' . $ciniki['curlapi']['token'];
+    $request_url .= '&tnid=' . $ciniki['curlapi']['tnid'];
     foreach($args as $arg=>$val) {
         $request_url .= "&$arg=" . rawurlencode($val);
     }
     $request_url .= '&format=json';
-    curl_setopt($q['curlapi']['ch'], CURLOPT_URL, $request_url);
-    curl_setopt($q['curlapi']['ch'], CURLOPT_POST, false);
+    curl_setopt($ciniki['curlapi']['ch'], CURLOPT_URL, $request_url);
+    curl_setopt($ciniki['curlapi']['ch'], CURLOPT_POST, false);
     if( is_array($post_content) ) {
         $content = '';
         foreach($post_content as $arg=>$val) {
             $content .= '&' . rawurlencode($arg) . '=' . rawurlencode($val);
         }
-        curl_setopt($q['curlapi']['ch'], CURLOPT_POSTFIELDS, $content);
+        curl_setopt($ciniki['curlapi']['ch'], CURLOPT_POSTFIELDS, $content);
     } elseif( $post_content != '' ) {
-        curl_setopt($q['curlapi']['ch'], CURLOPT_POSTFIELDS, $post_content);
+        curl_setopt($ciniki['curlapi']['ch'], CURLOPT_POSTFIELDS, $post_content);
     }
-    $rsp = curl_exec($q['curlapi']['ch']);
+    $rsp = curl_exec($ciniki['curlapi']['ch']);
     if( $rsp === false ) {
-        print "Error: " . curl_error($q['curlapi']['ch']) . "\n";
+        print "Error: " . curl_error($ciniki['curlapi']['ch']) . "\n";
         exit;
     }
     $rc = json_decode($rsp, true);

@@ -7,10 +7,10 @@
 // Arguments
 // ---------
 // q:
-// station_id:
+// tnid:      
 // args: The arguments for the hook
 //
-function qruqsp_aprs_parseStatus(&$q, $station_id, $packet, &$obj, &$data) {
+function qruqsp_aprs_parseStatus(&$ciniki, $tnid, $packet, &$obj, &$data) {
 
     $obj['atype'] = 16;
 

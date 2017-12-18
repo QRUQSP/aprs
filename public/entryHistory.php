@@ -10,17 +10,17 @@
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station to get the details for.
+// tnid:               The ID of the tenant to get the details for.
 // entry_id:          The ID of the aprs entry to get the history for.
 // field:                   The field to get the history for.
 //
-function qruqsp_aprs_entryHistory($q) {
+function qruqsp_aprs_entryHistory($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'entry_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'APRS Entry'),
         'field'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'field'),
         ));
@@ -30,15 +30,15 @@ function qruqsp_aprs_entryHistory($q) {
     $args = $rc['args'];
 
     //
-    // Check access to station_id as owner, or sys admin
+    // Check access to tnid as owner, or sys admin
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'checkAccess');
-    $rc = qruqsp_aprs_checkAccess($q, $args['station_id'], 'qruqsp.aprs.entryHistory');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'checkAccess');
+    $rc = qruqsp_aprs_checkAccess($ciniki, $args['tnid'], 'qruqsp.aprs.entryHistory');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbGetModuleHistory');
-    return qruqsp_core_dbGetModuleHistory($q, 'qruqsp.aprs', 'qruqsp_aprs_history', $args['station_id'], 'qruqsp_aprs_entries', $args['entry_id'], $args['field']);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbGetModuleHistory');
+    return ciniki_core_dbGetModuleHistory($ciniki, 'qruqsp.aprs', 'qruqsp_aprs_history', $args['tnid'], 'qruqsp_aprs_entries', $args['entry_id'], $args['field']);
 }
 ?>

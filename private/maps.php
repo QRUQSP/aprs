@@ -8,7 +8,7 @@
 // ---------
 // q: 
 //
-function qruqsp_aprs_maps(&$q) {
+function qruqsp_aprs_maps(&$ciniki) {
     //
     // Build the maps object
     //

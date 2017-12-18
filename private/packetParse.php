@@ -7,10 +7,10 @@
 // Arguments
 // ---------
 // q:
-// station_id:
+// tnid:      
 // args: The arguments for the hook
 //
-function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
+function qruqsp_aprs_packetParse(&$ciniki, $tnid, $packet) {
 
     $packet_txt = $packet['id'] . ': ';
     $obj = array(
@@ -33,8 +33,8 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Third-party traffic, deal with first so remaining data is parsed second
         //
         if( $chr == '}' ) {
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseThirdPartyTraffic');
-            $rc = qruqsp_aprs_parseThirdPartyTraffic($q, $station_id, $packet, $obj, $packet['data']);
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseThirdPartyTraffic');
+            $rc = qruqsp_aprs_parseThirdPartyTraffic($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
@@ -53,16 +53,16 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Old Mic-E Data (Rev 0 beta)
         //
         if( $chr == "'" || $chr == '`' || $chr == 0x1c || $chr == 0x1d ) {
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseMicEData');
-            $rc = qruqsp_aprs_parseMicEData($q, $station_id, $packet, $obj, $packet['data']);
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseMicEData');
+            $rc = qruqsp_aprs_parseMicEData($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
         } 
       
         //
-        // Peet Bros U-II Weather Station
-        // Peet Bros U-II Weather Station
+        // Peet Bros U-II Weather Tenant
+        // Peet Bros U-II Weather Tenant
         // Weather Report
         //
         elseif( 
@@ -76,16 +76,16 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
             || $chr == '_'  // Positionless weather report
             ) {
 //            $obj['type'] = 4;
-//            $packet_txt .= 'Peet Bros U-II Weather Station';
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseWeatherReport');
-            $rc = qruqsp_aprs_parseWeatherReport($q, $station_id, $packet, $obj, $packet['data']);
+//            $packet_txt .= 'Peet Bros U-II Weather Tenant';
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseWeatherReport');
+            $rc = qruqsp_aprs_parseWeatherReport($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
         }
 
         //
-        // Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Station
+        // Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Tenant
         //
         elseif( $chr == '!' ) {
             $obj['type'] = 3;
@@ -120,7 +120,7 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         //
         elseif( $chr == '*' ) {
             $obj['type'] = 9;
-            $packet_txt .= 'Peet Bros U-II Weather Station';
+            $packet_txt .= 'Peet Bros U-II Weather Tenant';
         } */
 
         //
@@ -143,8 +143,8 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Message
         //
         elseif( $chr == ':' ) {
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseMessage');
-            $rc = qruqsp_aprs_parseMessage($q, $station_id, $packet, $obj, $packet['data']);
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseMessage');
+            $rc = qruqsp_aprs_parseMessage($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
@@ -159,11 +159,11 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         }
 
         //
-        // Station Capabilities
+        // Tenant Capabilities
         //
         elseif( $chr == '<' ) {
             $obj['type'] = 14;
-            $packet_txt .= 'Station Capabilities';
+            $packet_txt .= 'Tenant Capabilities';
         }
 
         //
@@ -180,8 +180,8 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         elseif( $chr == '>' ) {
 //            $obj['type'] = 16;
 //            $packet_txt .= 'Status';
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseStatus');
-            $rc = qruqsp_aprs_parseStatus($q, $station_id, $packet, $obj, $packet['data']);
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseStatus');
+            $rc = qruqsp_aprs_parseStatus($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
@@ -207,8 +207,8 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Telemetry Data
         //
         elseif( $chr == 'T' ) {
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseTelemetry');
-            $rc = qruqsp_aprs_parseTelemetry($q, $station_id, $packet, $obj, $packet['data']);
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseTelemetry');
+            $rc = qruqsp_aprs_parseTelemetry($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
@@ -226,8 +226,8 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Weather Report
         //
         elseif( $chr == '_' ) {
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseWeatherReport');
-            $rc = qruqsp_aprs_parseWeatherReport($q, $station_id, $packet, $obj, $packet['data']);
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseWeatherReport');
+            $rc = qruqsp_aprs_parseWeatherReport($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }
@@ -245,8 +245,8 @@ function qruqsp_aprs_packetParse(&$q, $station_id, $packet) {
         // Third-party traffic
         //
         elseif( $chr == '}' ) {
-            qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'parseThirdPartyTraffic');
-            $rc = qruqsp_aprs_parseThirdPartyTraffic($q, $station_id, $packet, $obj, $packet['data']);
+            ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseThirdPartyTraffic');
+            $rc = qruqsp_aprs_parseThirdPartyTraffic($ciniki, $tnid, $packet, $obj, $packet['data']);
             if( $rc['stat'] != 'ok' ) {
                 return $rc;
             }

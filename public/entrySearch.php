@@ -2,23 +2,23 @@
 //
 // Description
 // -----------
-// This method searchs for a APRS Entrys for a station.
+// This method searchs for a APRS Entrys for a tenant.
 //
 // Arguments
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station to get APRS Entry for.
+// tnid:               The ID of the tenant to get APRS Entry for.
 // start_needle:       The search string to search for.
 // limit:              The maximum number of entries to return.
 //
-function qruqsp_aprs_entrySearch($q) {
+function qruqsp_aprs_entrySearch($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'start_needle'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Search String'),
         'limit'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Limit'),
         ));
@@ -28,10 +28,10 @@ function qruqsp_aprs_entrySearch($q) {
     $args = $rc['args'];
 
     //
-    // Check access to station_id as owner, or sys admin.
+    // Check access to tnid as owner, or sys admin.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'checkAccess');
-    $rc = qruqsp_aprs_checkAccess($q, $args['station_id'], 'qruqsp.aprs.entrySearch');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'checkAccess');
+    $rc = qruqsp_aprs_checkAccess($ciniki, $args['tnid'], 'qruqsp.aprs.entrySearch');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -65,23 +65,23 @@ function qruqsp_aprs_entrySearch($q) {
         . "qruqsp_aprs_entries.telemetry, "
         . "qruqsp_aprs_entries.comment "
         . "FROM qruqsp_aprs_entries "
-        . "WHERE qruqsp_aprs_entries.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
+        . "WHERE qruqsp_aprs_entries.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
         . "AND ("
-            . "name LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR name LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR from_call_sign LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR heard_call_sign LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR comment LIKE '" . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
-            . "OR comment LIKE '% " . qruqsp_core_dbQuote($q, $args['start_needle']) . "%' "
+            . "name LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR name LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR from_call_sign LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR heard_call_sign LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR comment LIKE '" . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
+            . "OR comment LIKE '% " . ciniki_core_dbQuote($ciniki, $args['start_needle']) . "%' "
         . ") "
         . "";
     if( isset($args['limit']) && is_numeric($args['limit']) && $args['limit'] > 0 ) {
-        $strsql .= "LIMIT " . qruqsp_core_dbQuote($q, $args['limit']) . " ";
+        $strsql .= "LIMIT " . ciniki_core_dbQuote($ciniki, $args['limit']) . " ";
     } else {
         $strsql .= "LIMIT 25 ";
     }
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
-    $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.aprs', array(
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+    $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.aprs', array(
         array('container'=>'entries', 'fname'=>'id', 
             'fields'=>array('id', 'decoder', 'channel', 'utc_of_traffic', 'from_call_sign', 'from_call_suffix', 'heard_call_sign', 'heard_call_suffix', 'level', 'error', 'dti', 'name', 'symbol', 'latitude', 'longitude', 'speed', 'course', 'altitude', 'frequency', 'offset', 'tone', 'system', 'status', 'telemetry', 'comment')),
         ));

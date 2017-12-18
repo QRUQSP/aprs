@@ -6,13 +6,13 @@
 // Arguments
 // ---------
 //
-function qruqsp_aprs_entryUpdate(&$q) {
+function qruqsp_aprs_entryUpdate(&$ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'entry_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'APRS Entry'),
         'decoder'=>array('required'=>'no', 'blank'=>'no', 'name'=>'Decoder'),
         'channel'=>array('required'=>'no', 'blank'=>'yes', 'name'=>'Channel'),
@@ -46,17 +46,17 @@ function qruqsp_aprs_entryUpdate(&$q) {
 
     //
     // Make sure this module is activated, and
-    // check permission to run this function for this station
+    // check permission to run this function for this tenant
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'checkAccess');
-    $rc = qruqsp_aprs_checkAccess($q, $args['station_id'], 'qruqsp.aprs.entryUpdate');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'checkAccess');
+    $rc = qruqsp_aprs_checkAccess($ciniki, $args['tnid'], 'qruqsp.aprs.entryUpdate');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'explodeCallSign');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'explodeCallSign');
     if( isset($args['from_call_sign']) ) {
-        $rc = qruqsp_core_explodeCallSign($q, $args['from_call_sign']);
+        $rc = ciniki_core_explodeCallSign($ciniki, $args['from_call_sign']);
         if( $rc['stat'] != 'ok' ) {
             return $rc;
         }
@@ -65,7 +65,7 @@ function qruqsp_aprs_entryUpdate(&$q) {
     }
     
     if( isset($args['heard_call_sign']) ) {
-        $rc = qruqsp_core_explodeCallSign($q, $args['heard_call_sign']);
+        $rc = ciniki_core_explodeCallSign($ciniki, $args['heard_call_sign']);
         if( $rc['stat'] != 'ok' ) {
             return $rc;
         }
@@ -76,11 +76,11 @@ function qruqsp_aprs_entryUpdate(&$q) {
     //
     // Start transaction
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionStart');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionRollback');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbTransactionCommit');
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbAddModuleHistory');
-    $rc = qruqsp_core_dbTransactionStart($q, 'qruqsp.aprs');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionStart');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionRollback');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbTransactionCommit');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbAddModuleHistory');
+    $rc = ciniki_core_dbTransactionStart($ciniki, 'qruqsp.aprs');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -88,33 +88,33 @@ function qruqsp_aprs_entryUpdate(&$q) {
     //
     // Update the APRS Entry in the database
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'objectUpdate');
-    $rc = qruqsp_core_objectUpdate($q, $args['station_id'], 'qruqsp.aprs.entry', $args['entry_id'], $args, 0x04);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'objectUpdate');
+    $rc = ciniki_core_objectUpdate($ciniki, $args['tnid'], 'qruqsp.aprs.entry', $args['entry_id'], $args, 0x04);
     if( $rc['stat'] != 'ok' ) {
-        qruqsp_core_dbTransactionRollback($q, 'qruqsp.aprs');
+        ciniki_core_dbTransactionRollback($ciniki, 'qruqsp.aprs');
         return $rc;
     }
 
     //
     // Commit the transaction
     //
-    $rc = qruqsp_core_dbTransactionCommit($q, 'qruqsp.aprs');
+    $rc = ciniki_core_dbTransactionCommit($ciniki, 'qruqsp.aprs');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     //
-    // Update the last_change date in the station modules
+    // Update the last_change date in the tenant modules
     // Ignore the result, as we don't want to stop user updates if this fails.
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'updateModuleChangeDate');
-    qruqsp_core_updateModuleChangeDate($q, $args['station_id'], 'qruqsp', 'aprs');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'tenants', 'private', 'updateModuleChangeDate');
+    ciniki_tenants_updateModuleChangeDate($ciniki, $args['tnid'], 'qruqsp', 'aprs');
 
     //
     // Update the web index if enabled
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'hookExec');
-    qruqsp_core_hookExec($q, $args['station_id'], 'qruqsp', 'web', 'indexObject', array('object'=>'qruqsp.aprs.entry', 'object_id'=>$args['entry_id']));
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'hookExec');
+    ciniki_core_hookExec($ciniki, $args['tnid'], 'qruqsp', 'web', 'indexObject', array('object'=>'qruqsp.aprs.entry', 'object_id'=>$args['entry_id']));
 
     return array('stat'=>'ok');
 }

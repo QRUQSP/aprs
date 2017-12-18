@@ -8,16 +8,16 @@
 // ---------
 // api_key:
 // auth_token:
-// station_id:         The ID of the station the aprs entry is attached to.
+// tnid:               The ID of the tenant the aprs entry is attached to.
 // entry_id:          The ID of the aprs entry to get the details for.
 //
-function qruqsp_aprs_entryGet($q) {
+function qruqsp_aprs_entryGet($ciniki) {
     //
     // Find all the required and optional arguments
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'prepareArgs');
-    $rc = qruqsp_core_prepareArgs($q, 'no', array(
-        'station_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Station'),
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'prepareArgs');
+    $rc = ciniki_core_prepareArgs($ciniki, 'no', array(
+        'tnid'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'Tenant'),
         'entry_id'=>array('required'=>'yes', 'blank'=>'no', 'name'=>'APRS Entry'),
         ));
     if( $rc['stat'] != 'ok' ) {
@@ -27,19 +27,19 @@ function qruqsp_aprs_entryGet($q) {
 
     //
     // Make sure this module is activated, and
-    // check permission to run this function for this station
+    // check permission to run this function for this tenant
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'checkAccess');
-    $rc = qruqsp_aprs_checkAccess($q, $args['station_id'], 'qruqsp.aprs.entryGet');
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'checkAccess');
+    $rc = qruqsp_aprs_checkAccess($ciniki, $args['tnid'], 'qruqsp.aprs.entryGet');
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
 
     //
-    // Load station settings
+    // Load tenant settings
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'intlSettings');
-    $rc = qruqsp_core_intlSettings($q, $args['station_id']);
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'tenants', 'private', 'intlSettings');
+    $rc = ciniki_tenants_intlSettings($ciniki, $args['tnid']);
     if( $rc['stat'] != 'ok' ) {
         return $rc;
     }
@@ -47,8 +47,8 @@ function qruqsp_aprs_entryGet($q) {
     $intl_currency_fmt = numfmt_create($rc['settings']['intl-default-locale'], NumberFormatter::CURRENCY);
     $intl_currency = $rc['settings']['intl-default-currency'];
 
-    qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dateFormat');
-    $date_format = qruqsp_core_dateFormat($q, 'php');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dateFormat');
+    $date_format = ciniki_core_dateFormat($ciniki, 'php');
 
     //
     // Return default for new APRS Entry
@@ -112,11 +112,11 @@ function qruqsp_aprs_entryGet($q) {
             . "qruqsp_aprs_entries.telemetry, "
             . "qruqsp_aprs_entries.comment "
             . "FROM qruqsp_aprs_entries "
-            . "WHERE qruqsp_aprs_entries.station_id = '" . qruqsp_core_dbQuote($q, $args['station_id']) . "' "
-            . "AND qruqsp_aprs_entries.id = '" . qruqsp_core_dbQuote($q, $args['entry_id']) . "' "
+            . "WHERE qruqsp_aprs_entries.tnid = '" . ciniki_core_dbQuote($ciniki, $args['tnid']) . "' "
+            . "AND qruqsp_aprs_entries.id = '" . ciniki_core_dbQuote($ciniki, $args['entry_id']) . "' "
             . "";
-        qruqsp_core_loadMethod($q, 'qruqsp', 'core', 'private', 'dbHashQueryArrayTree');
-        $rc = qruqsp_core_dbHashQueryArrayTree($q, $strsql, 'qruqsp.aprs', array(
+        ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dbHashQueryArrayTree');
+        $rc = ciniki_core_dbHashQueryArrayTree($ciniki, $strsql, 'qruqsp.aprs', array(
             array('container'=>'entries', 'fname'=>'id', 
                 'fields'=>array('decoder', 'channel', 'utc_of_traffic', 'from_call_sign', 'from_call_suffix', 'heard_call_sign', 'heard_call_suffix', 'level', 'error', 'dti', 'name', 'symbol', 'latitude', 'longitude', 'speed', 'course', 'altitude', 'frequency', 'offset', 'tone', 'system', 'status', 'telemetry', 'comment'),
                 ),

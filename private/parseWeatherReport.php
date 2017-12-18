@@ -7,10 +7,10 @@
 // Arguments
 // ---------
 // q:
-// station_id:
+// tnid:      
 // args: The arguments for the hook
 //
-function qruqsp_aprs_parseWeatherReport(&$q, $station_id, $packet, &$obj, &$data) {
+function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data) {
 
     //
     // Strip \r or \n from end of string
@@ -82,7 +82,7 @@ function qruqsp_aprs_parseWeatherReport(&$q, $station_id, $packet, &$obj, &$data
     //
     elseif( preg_match("/^!([0-9][0-9])([0-9][0-9])\.([0-9][0-9])(N|S)\/([0-9][0-9][0-9])([0-9][0-9])\.([0-9][0-9])(E|W)_$/", $data, $matches) ) {
         //
-        // FIXME: This case occures when a weather station sends out a positionless weather report, and 
+        // FIXME: This case occures when a weather tenant sends out a positionless weather report, and 
         // either bofore or after sends a position in a second packet. This positions need to be matched
         // to a previous or stored for future positionless report.
         //

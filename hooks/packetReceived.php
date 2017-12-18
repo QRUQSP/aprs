@@ -8,10 +8,10 @@
 // Arguments
 // ---------
 // q:
-// station_id:
+// tnid:      
 // args: The arguments for the hook
 //
-function qruqsp_aprs_hooks_packetReceived(&$q, $station_id, $args) {
+function qruqsp_aprs_hooks_packetReceived(&$ciniki, $tnid, $args) {
     
     //
     // If no packet in args, then perhaps a packet we don't understand
@@ -32,8 +32,8 @@ function qruqsp_aprs_hooks_packetReceived(&$q, $station_id, $args) {
     //
     // Try to parse the data
     //
-    qruqsp_core_loadMethod($q, 'qruqsp', 'aprs', 'private', 'packetParse');
-    $rc = qruqsp_aprs_packetParse($q, $station_id, $args['packet']);
+    ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'packetParse');
+    $rc = qruqsp_aprs_packetParse($ciniki, $tnid, $args['packet']);
     if( $rc['stat'] != 'ok' && $rc['stat'] != 'noaprs' ) {
         return $rc;
     }

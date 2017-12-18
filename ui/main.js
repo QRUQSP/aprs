@@ -5,7 +5,7 @@ function qruqsp_aprs_main() {
     //
     // The panel to list the entry
     //
-    this.menu = new Q.panel('entry', 'qruqsp_aprs_main', 'menu', 'mc', 'full', 'sectioned', 'qruqsp.aprs.main.menu');
+    this.menu = new M.panel('entry', 'qruqsp_aprs_main', 'menu', 'mc', 'full', 'sectioned', 'qruqsp.aprs.main.menu');
     this.menu.data = {};
     this.menu.nplist = [];
     this.menu.sections = {
@@ -20,13 +20,13 @@ function qruqsp_aprs_main() {
             'sortable':'yes',
             'sortTypes':['text', 'text', 'text', 'text', 'text'],
             'addTxt':'Add APRS Entry',
-            'addFn':'Q.qruqsp_aprs_main.entry.open(\'Q.qruqsp_aprs_main.menu.open();\',0,null);'
+            'addFn':'M.qruqsp_aprs_main.entry.open(\'M.qruqsp_aprs_main.menu.open();\',0,null);'
             },
     }
     this.menu.liveSearchCb = function(s, i, v) {
         if( s == 'search' && v != '' ) {
-            Q.api.getJSONBgCb('qruqsp.aprs.entrySearch', {'station_id':Q.curStationID, 'start_needle':v, 'limit':'25'}, function(rsp) {
-                Q.qruqsp_aprs_main.menu.liveSearchShow('search',null,Q.gE(Q.qruqsp_aprs_main.menu.panelUID + '_' + s), rsp.entries);
+            M.api.getJSONBgCb('qruqsp.aprs.entrySearch', {'tnid':M.curTenantID, 'start_needle':v, 'limit':'25'}, function(rsp) {
+                M.qruqsp_aprs_main.menu.liveSearchShow('search',null,M.gE(M.qruqsp_aprs_main.menu.panelUID + '_' + s), rsp.entries);
                 });
         }
     }
@@ -34,7 +34,7 @@ function qruqsp_aprs_main() {
         return this.cellValue(s, i, j, d);
     }
     this.menu.liveSearchResultRowFn = function(s, f, i, j, d) {
-        return 'Q.qruqsp_aprs_main.entry.open(\'Q.qruqsp_aprs_main.menu.open();\',\'' + d.id + '\');';
+        return 'M.qruqsp_aprs_main.entry.open(\'M.qruqsp_aprs_main.menu.open();\',\'' + d.id + '\');';
     }
     this.menu.cellValue = function(s, i, j, d) {
         if( s == 'entries' || s == 'search' ) {
@@ -49,16 +49,16 @@ function qruqsp_aprs_main() {
     }
     this.menu.rowFn = function(s, i, d) {
         if( s == 'entries' ) {
-            return 'Q.qruqsp_aprs_main.entry.open(\'Q.qruqsp_aprs_main.menu.open();\',\'' + d.id + '\',Q.qruqsp_aprs_main.entry.nplist);';
+            return 'M.qruqsp_aprs_main.entry.open(\'M.qruqsp_aprs_main.menu.open();\',\'' + d.id + '\',M.qruqsp_aprs_main.entry.nplist);';
         }
     }
     this.menu.open = function(cb) {
-        Q.api.getJSONCb('qruqsp.aprs.entryList', {'station_id':Q.curStationID}, function(rsp) {
+        M.api.getJSONCb('qruqsp.aprs.entryList', {'tnid':M.curTenantID}, function(rsp) {
             if( rsp.stat != 'ok' ) {
-                Q.api.err(rsp);
+                M.api.err(rsp);
                 return false;
             }
-            var p = Q.qruqsp_aprs_main.menu;
+            var p = M.qruqsp_aprs_main.menu;
             p.data = rsp;
             p.nplist = (rsp.nplist != null ? rsp.nplist : null);
             p.refresh();
@@ -70,7 +70,7 @@ function qruqsp_aprs_main() {
     //
     // The panel to display APRS Entry
     //
-    this.entry = new Q.panel('APRS Entry', 'qruqsp_aprs_main', 'entry', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.aprs.main.entry');
+    this.entry = new M.panel('APRS Entry', 'qruqsp_aprs_main', 'entry', 'mc', 'medium mediumaside', 'sectioned', 'qruqsp.aprs.main.entry');
     this.entry.data = null;
     this.entry.entry_id = 0;
     this.entry.sections = {
@@ -112,12 +112,12 @@ function qruqsp_aprs_main() {
     this.entry.open = function(cb, eid, list) {
         if( eid != null ) { this.entry_id = eid; }
         if( list != null ) { this.nplist = list; }
-        Q.api.getJSONCb('qruqsp.aprs.entryGet', {'station_id':Q.curStationID, 'entry_id':this.entry_id}, function(rsp) {
+        M.api.getJSONCb('qruqsp.aprs.entryGet', {'tnid':M.curTenantID, 'entry_id':this.entry_id}, function(rsp) {
             if( rsp.stat != 'ok' ) {
-                Q.api.err(rsp);
+                M.api.err(rsp);
                 return false;
             }
-            var p = Q.qruqsp_aprs_main.entry;
+            var p = M.qruqsp_aprs_main.entry;
             p.data = rsp.entry;
             p.refresh();
             p.show(cb);
@@ -140,7 +140,7 @@ function qruqsp_aprs_main() {
         //
         // Create the app container
         //
-        var ac = Q.createContainer(ap, 'qruqsp_aprs_main', 'yes');
+        var ac = M.createContainer(ap, 'qruqsp_aprs_main', 'yes');
         if( ac == null ) {
             alert('App Error');
             return false;

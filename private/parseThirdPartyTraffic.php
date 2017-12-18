@@ -7,10 +7,10 @@
 // Arguments
 // ---------
 // q:
-// station_id:
+// tnid:      
 // args: The arguments for the hook
 //
-function qruqsp_aprs_parseThirdPartyTraffic(&$q, $station_id, $packet, &$obj, &$data) {
+function qruqsp_aprs_parseThirdPartyTraffic(&$ciniki, $tnid, $packet, &$obj, &$data) {
 
     $obj['atype'] = 24;
 
@@ -21,7 +21,7 @@ function qruqsp_aprs_parseThirdPartyTraffic(&$q, $station_id, $packet, &$obj, &$
         $data = substr($data, strlen($matches[0]));
         $obj['source_path'] = $matches[1];
         $obj['third_party_network'] = $matches[2];
-        $obj['receiving_station'] = $matches[3];
+        $obj['receiving_tenant'] = $matches[3];
     } 
 
     //
@@ -31,8 +31,8 @@ function qruqsp_aprs_parseThirdPartyTraffic(&$q, $station_id, $packet, &$obj, &$
         $data = substr($data, strlen($matches[0]));
         $obj['source_path'] = $matches[1];
         $obj['third_party_network'] = $matches[2];
-        $obj['receiving_station'] = $matches[3];
-        $obj['destination_station'] = $matches[4];
+        $obj['receiving_tenant'] = $matches[3];
+        $obj['destination_tenant'] = $matches[4];
     }
 
     return array('stat'=>'ok');
