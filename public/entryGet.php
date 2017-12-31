@@ -47,8 +47,8 @@ function qruqsp_aprs_entryGet($ciniki) {
     $intl_currency_fmt = numfmt_create($rc['settings']['intl-default-locale'], NumberFormatter::CURRENCY);
     $intl_currency = $rc['settings']['intl-default-currency'];
 
-    ciniki_core_loadMethod($ciniki, 'ciniki', 'core', 'private', 'dateFormat');
-    $date_format = ciniki_core_dateFormat($ciniki, 'php');
+    ciniki_core_loadMethod($ciniki, 'ciniki', 'users', 'private', 'dateFormat');
+    $date_format = ciniki_users_dateFormat($ciniki, 'php');
 
     //
     // Return default for new APRS Entry
