@@ -104,7 +104,7 @@
 # date_added:               The UTC date and time the record was added.
 # last_updated:             The UTC date and time the record was last updated.
 #
-create table qruqsp_aprs_entries (
+create table qruqsp_aprs_packets (
     id int not null auto_increment,
     uuid char(36) not null,
     tnid int not null,
