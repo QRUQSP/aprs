@@ -141,6 +141,7 @@ function qruqsp_aprs_packetParse(&$ciniki, $tnid, $packet) {
 
         //
         // Message
+        // Note: This is dealt with in the qruqsp.sams module.
         //
         elseif( $chr == ':' ) {
             ciniki_core_loadMethod($ciniki, 'qruqsp', 'aprs', 'private', 'parseMessage');
@@ -263,9 +264,10 @@ function qruqsp_aprs_packetParse(&$ciniki, $tnid, $packet) {
 //    if( isset($obj['atype']) && ($obj['atype'] == 24 || $obj['atype'] == 19) ) {
 //        print_r($obj);
 //    }
+        print_r($obj);
     if( isset($obj['atype']) && ($obj['atype'] == 1 ) ) {
 //        print_r($packet['addrs']);
-        print_r($obj);
+//        print_r($obj);
     }
 //    print $packet_txt . ":" . $packet['data'] . "\n";
 

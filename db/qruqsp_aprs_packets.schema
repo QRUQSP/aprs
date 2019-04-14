@@ -15,18 +15,18 @@
 #
 #                                1 - Current Mic-E Data (Rev 0 beta)
 #                                2 - Old Mic-E Data (Rev 0 beta)
-#                                3 - Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Tenant
-#                                4 - Peet Bros U-II Weather Tenant
+#                                3 - Position without timestamp (no APRS messaging), or Ultimeter 2000 WX Station
+#                                4 - Peet Bros U-II Weather Station
 #                                5 - Raw GPS Data or Ultimeter 2000
 #                                6 - Agrelo DFJr/MicroFinder
 #                                7 - Old Mic-E Data (but Current data for TM-D700)
 #                                8 - Item
-#                                9 - Peet Bros U-II Weather Tenant
+#                                9 - Peet Bros U-II Weather Station
 #                               10 - Invalid Data or Test Data
 #                               11 - Position with timestamp (no APRS messaging)
 #                               12 - Message
 #                               13 - Object
-#                               14 - Tenant Capabilities
+#                               14 - Station Capabilities
 #                               15 - Position without timestamp (with APRS messaging)
 #                               16 - Status
 #                               17 - Query
