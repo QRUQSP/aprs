@@ -29,7 +29,10 @@ function qruqsp_aprs_hooks_uiSettings(&$ciniki, $tnid, $args) {
             'label'=>'APRS',
             'edit'=>array('app'=>'qruqsp.aprs.main'),
             );
-        $rsp['menu_items'][] = $menu_item;
+        //
+        // There is currently nothing to show in the APRS module
+        //
+//        $rsp['menu_items'][] = $menu_item;
     }
 
     return $rsp;
