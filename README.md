@@ -1,7 +1,8 @@
 QRUQSP - aprs
 ===========================================
 
-This module stores APRS packets that are injected via the API.
+This module stores APRS packets that are received via hooks from other modules.
+This module is not complete and many old features exist that do not work anymore.
 
 License
 -------
