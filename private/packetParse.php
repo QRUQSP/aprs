@@ -261,16 +261,6 @@ function qruqsp_aprs_packetParse(&$ciniki, $tnid, $packet) {
         }
     }
 
-//    if( isset($obj['atype']) && ($obj['atype'] == 24 || $obj['atype'] == 19) ) {
-//        print_r($obj);
-//    }
-        print_r($obj);
-    if( isset($obj['atype']) && ($obj['atype'] == 1 ) ) {
-//        print_r($packet['addrs']);
-//        print_r($obj);
-    }
-//    print $packet_txt . ":" . $packet['data'] . "\n";
-
     return array('stat'=>'ok');
 }
 ?>
