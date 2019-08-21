@@ -27,6 +27,7 @@ function qruqsp_aprs_hooks_uiSettings(&$ciniki, $tnid, $args) {
         $menu_item = array(
             'priority'=>5000,
             'label'=>'APRS',
+            'helpcontent'=>'Manage APRS settings and view APRS packets received',
             'edit'=>array('app'=>'qruqsp.aprs.main'),
             );
         //
