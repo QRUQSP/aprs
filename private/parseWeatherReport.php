@@ -97,8 +97,8 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
         $lat = intval($lat_degrees) + (floatval($lat_minutes . '.' . $lat_hmin)/60);
         $long = intval($long_degrees) + (floatval($long_minutes . '.' . $long_hmin)/60);
 
-        $obj['latitude'] = $lat;
-        $obj['longitude'] = $long;
+        $obj['latitude'] = ($lat_direction == 'S' ? -$lat : $lat);
+        $obj['longitude'] = ($long_direction == 'W' ? -$long : $long);
         
         return array('stat'=>'ok');
     }
@@ -118,12 +118,14 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
         $lat = intval($lat_degrees) + (floatval($lat_minutes . '.' . $lat_hmin)/60);
         $long = intval($long_degrees) + (floatval($long_minutes . '.' . $long_hmin)/60);
 
-        $obj['latitude'] = $lat;
-        $obj['longitude'] = $long;
+        $obj['latitude'] = ($lat_direction == 'S' ? -$lat : $lat);
+        $obj['longitude'] = ($long_direction == 'W' ? -$long : $long);
 
-        $obj['wind_direction'] = $matches[10];
         $obj['weather_flags'] |= 0x01;
-        $obj['wind_speed'] = $matches[11];
+        if( isset($matches[11]) && $matches[11] != '' ) {
+            $obj['wind_deg'] = $matches[10];
+            $obj['wind_kph'] = round(($matches[11] * 1.609344), 2);
+        }
         $obj['weather_flags'] |= 0x02;
     }
     
@@ -131,7 +133,7 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
     // Position with Timestamp with Weather Data
     // @000000z0000.00N/00000.00W_000/000g000t...
     //
-    elseif( preg_match("/^(\@)([0-9][0-9])([0-9][0-9])([0-9][0-9])(z|\/|h)([0-9][0-9])([0-9][0-9])\.([0-9][0-9])(N|S)\/([0-9][0-9][0-9])([0-9][0-9])\.([0-9][0-9])(E|W)_([0-9][0-9][0-9])\/([0-9][0-9][0-9])(.+)$/", $data, $matches) ) {
+    elseif( preg_match("/^(\@)([0-9][0-9])([0-9][0-9])([0-9][0-9])(z|\/|h)([0-9][0-9])([0-9][0-9])\.([0-9][0-9])(N|S)\/([0-9][0-9][0-9])([0-9][0-9])\.([0-9][0-9])(E|W)_([0-9][0-9][0-9])\/([0-9 ][0-9 ][0-9 ])(.+)$/", $data, $matches) ) {
         $utc_of_traffic = new DateTime($packet['utc_of_traffic'], new DateTimezone('UTC'));
         if( $matches[5] == 'z' ) {
             $day = $matches[2];
@@ -173,12 +175,14 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
         $lat = intval($lat_degrees) + (floatval($lat_minutes . '.' . $lat_hmin)/60);
         $long = intval($long_degrees) + (floatval($long_minutes . '.' . $long_hmin)/60);
 
-        $obj['latitude'] = $lat;
-        $obj['longitude'] = $long;
+        $obj['latitude'] = ($lat_direction == 'S' ? -$lat : $lat);
+        $obj['longitude'] = ($long_direction == 'W' ? -$long : $long);
 
-        $obj['wind_direction'] = $matches[14];
         $obj['weather_flags'] |= 0x01;
-        $obj['wind_speed'] = $matches[15];
+        if( isset($matches[15]) && $matches[15] != '' ) {
+            $obj['wind_deg'] = $matches[14];
+            $obj['wind_kph'] = round(($matches[15] * 1.609344), 2);
+        }
         $obj['weather_flags'] |= 0x02;
     }
 
@@ -210,7 +214,7 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
                     $obj['weather_flags'] |= 0x04;
                     break;
                 case 't': 
-                    $obj['temperature'] = $matches[2];
+                    $obj['celsius'] = round(($matches[2] - 32)/(9/5), 2);
                     $obj['weather_flags'] |= 0x08;
                     break;
                 case 'r': 
@@ -246,7 +250,7 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
         elseif( preg_match("/b([0-9][0-9][0-9])([0-9][0-9])/", $data, $matches) ) {
             $found = 1;
             $data = substr($data, 6);
-            $obj['barometric_pressure'] = $matches[1] . '.' . $matches[2];
+            $obj['millibars'] = ($matches[1] . '.' . $matches[2]) * 10;
             $obj['weather_flags'] |= 0x0100;
         }
         elseif( preg_match("/([a-zA-Z])([a-zA-Z][a-z0-9A-Z\-]{1,3})/", $data, $matches) ) {
@@ -260,6 +264,53 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
     if( isset($obj['weather_flags']) && $obj['weather_flags'] > 0 ) {
         $obj['flags'] |= 0x04;
     }
+
+    if( isset($packet['addrs'][1]['callsign']) && $packet['addrs'][1]['callsign'] != '' 
+        && isset($obj['date_sent']) 
+        && isset($obj['latitude']) 
+        && isset($obj['longitude']) 
+        ) {
+        $weather_data = array(
+            'sample_date' => $obj['date_sent'],
+            'object' => 'qruqsp.aprs.station',
+            'sensor' => 'APRS',
+            'latitude' => $obj['latitude'],
+            'longitude' => $obj['longitude'],
+            'celsius' => $obj['celsius'],
+            'humidity' => $obj['humidity'],
+        );
+        if( isset($obj['millibars']) ) {
+            $weather_data['millibars'] = $obj['millibars'];
+        }
+        if( isset($obj['wind_kph']) ) {
+            $weather_data['wind_kph'] = $obj['wind_kph'];
+        }
+        if( isset($obj['wind_deg']) ) {
+            $weather_data['wind_deg'] = $obj['wind_deg'];
+        }
+        $weather_data['station'] = $packet['addrs'][1]['callsign'];
+        if( isset($packet['addrs'][1]['ssid']) && $packet['addrs'][1]['ssid'] != '' ) {
+            $weather_data['station'] .= '-' . $packet['addrs'][1]['ssid'];
+        }
+        $weather_data['object_id'] = $weather_data['station'];
+
+        //
+        // Check if any modules what weather data
+        //
+        foreach($ciniki['tenant']['modules'] as $module => $m) {
+            list($pkg, $mod) = explode('.', $module);
+            $rc = ciniki_core_loadMethod($ciniki, $pkg, $mod, 'hooks', 'weatherDataReceived');
+            if( $rc['stat'] == 'ok' ) {
+                $fn = $rc['function_call'];
+                $rc = $fn($ciniki, $tnid, $weather_data);
+                if( $rc['stat'] != 'ok' ) {
+                    return $rc;
+                }
+            }
+        }
+    }
+
+
 
     return array('stat'=>'ok');
 }
