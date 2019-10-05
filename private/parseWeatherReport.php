@@ -274,6 +274,7 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
             'sample_date' => $obj['date_sent'],
             'object' => 'qruqsp.aprs.station',
             'sensor' => 'APRS',
+            'flags' => 0x10, // Remote station, read only
             'latitude' => $obj['latitude'],
             'longitude' => $obj['longitude'],
             'celsius' => $obj['celsius'],
