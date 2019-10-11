@@ -311,8 +311,6 @@ function qruqsp_aprs_parseWeatherReport(&$ciniki, $tnid, $packet, &$obj, &$data)
         }
     }
 
-
-
     return array('stat'=>'ok');
 }
 ?>
