@@ -199,15 +199,15 @@
         }
     }
     this.edit.remove = function() {
-        if( confirm('Are you sure you want to remove entry?') ) {
-            M.api.getJSONCb('qruqsp.aprs.entryDelete', {'tnid':M.curTenantID, 'entry_id':this.entry_id}, function(rsp) {
+        M.confirm('Are you sure you want to remove entry?',null,function() {
+            M.api.getJSONCb('qruqsp.aprs.entryDelete', {'tnid':M.curTenantID, 'entry_id':M..edit.entry_id}, function(rsp) {
                 if( rsp.stat != 'ok' ) {
                     M.api.err(rsp);
                     return false;
                 }
                 M.qruqsp_aprs_main.edit.close();
             });
-        }
+        });
     }
     this.edit.nextButtonFn = function() {
         if( this.nplist != null && this.nplist.indexOf('' + this.entry_id) < (this.nplist.length - 1) ) {
